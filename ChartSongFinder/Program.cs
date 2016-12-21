@@ -10,6 +10,7 @@ namespace ChartSongFinder
     {
         static void Main(string[] args)
         {
+            SongFinder sf = new SongFinder();
         }
     }
 }
