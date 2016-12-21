@@ -6,36 +6,29 @@ using HtmlAgilityPack;
 
 namespace ChartSongFinder
 {
-    class SongFinder
+    public class Radio1ChartSongFinder
     {
         private string radio1Top40;
         private List<Tuple<string,string>> top40SongList;
+        public List<Tuple<string,string>> Top40List { get { return top40SongList; }  }
 
-        public SongFinder()
+        public Radio1ChartSongFinder()
         {
             radio1Top40 = "http://www.bbc.co.uk/radio1/chart/singles";
             HtmlDocument doc = GetHtml(radio1Top40);
             top40SongList = new List<Tuple<string, string>>();
 
             //narrow html nodes down to a collection of cht-entry-details divs
-            HtmlNodeCollection nodes =  doc.DocumentNode.SelectNodes("//*[contains(@class,'cht-entry-details')]");
+            //these each contain details about individual chart entries
+            HtmlNodeCollection chartEntryNodes =  doc.DocumentNode.SelectNodes("//*[contains(@class,'cht-entry-details')]");
 
-            foreach (HtmlNode n in nodes)
-            {
-                HtmlNodeCollection childNodes = n.ChildNodes;
-
-                top40SongList.Add(GetSongTuple(childNodes));
-
-                
-            }
-
-            foreach(Tuple<string,string> tuple in top40SongList)
-            {
-                Write(String.Format("{0} - {1}", tuple.Item1, tuple.Item2));
-            }
             
-            Console.ReadLine();
+            foreach (HtmlNode entry in chartEntryNodes)
+            {
+                top40SongList.Add(GetSongTuple(entry));                
+            }            
         }
+
 
         private HtmlDocument GetHtml(string url)
         {
@@ -56,16 +49,16 @@ namespace ChartSongFinder
                 }
             }
             //if there is no data file from today, then download it
-            Write("Downloading Song Data");
             doc = web.Load(url);
             doc.Save("Top40SongData");
             return doc;
         }
 
-        private Tuple<string,string> GetSongTuple(HtmlNodeCollection nodes)
+        private Tuple<string,string> GetSongTuple(HtmlNode entryNode)
         {
             string songName = null;
             string songArtist = null;
+            HtmlNodeCollection nodes = entryNode.ChildNodes;
             foreach(HtmlNode node in nodes)
                 if (node.HasAttributes)
                 {
@@ -80,10 +73,6 @@ namespace ChartSongFinder
                 }
 
             return new Tuple<string, string>(songArtist, songName);
-        }
-        //so I dont have to type Console.WriteLine all the time
-        private void Write(string text){
-            Console.WriteLine(text);
         }
     }
 }
